@@ -4,7 +4,11 @@ from flask import flash, Flask, redirect, render_template, request
 # from flaskext.mysql import MySQL
 # from flask_sqlalchemy import SQLAlchemy
 import mysql.connector
+import csv
 from mysql.connector import Error
+
+
+    
 
 def create_server_connection(host_name, user_name, user_password):
     connection = None
@@ -147,14 +151,7 @@ def getWatchlistSearch(listId):
     userName = data[0][0]
     listName = data[0][1]
 
-    try:
-        text = request.form["add"]
-        print(text)
-    except:
-        print("err")
-    print("hiiiiii")
-
-    cursor.execute("SELECT * FROM Stocks NATURAL JOIN Watchlists NATURAL JOIN WatchlistToTicker")
+    cursor.execute('SELECT * FROM Stocks NATURAL JOIN Watchlists NATURAL JOIN WatchlistToTicker WHERE WatchlistId = ' + listId)
     data = cursor.fetchall()
     list_html = '<form method="post" action="/removeStockFromList/' + listId +  '">'
     for i in range(len(data)):
@@ -221,6 +218,72 @@ def stock_search_results(results):
 
     return "Hola there!"
 
+@app.route("/data")
+def uploadData():
+    # with open('Data/stockdata.csv', newline='') as csvfile:
+    #     spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+    #     success = 0
+    #     failed = 0
+    #     for row in spamreader:
+    #         raw = (' '.join(row))
+    #         tokens = raw.split(',')
+    #         # print(tokens)
+
+    #         query = 'INSERT INTO Stocks VALUES ("' + tokens[0] + '", "' + tokens[1] + '", ' + tokens[2] + ', ' + tokens[3] + ', ' + tokens[4] + ')'
+    #         # print(query)
+    #         try:
+    #             cursor.execute(query)
+    #             connection.commit()
+
+    #             success += 1
+    #             print(success)
+    #         except:
+    #             failed += 1
+    #             print("error", failed)
+    # with open('Data/stockdata2.csv', newline='') as csvfile:
+    #     spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+    #     success = 0
+    #     failed = 0
+    #     for row in spamreader:
+    #         raw = (' '.join(row))
+    #         tokens = raw.split(',')
+    #         # print(tokens)
+
+    #         query = 'INSERT INTO Prices VALUES ("' + tokens[0] + '", ' + tokens[1] + ', ' + tokens[2] + ', ' + tokens[3] + ', ' + tokens[4] + ')'
+    #         # print(query)
+    #         try:
+    #             cursor.execute(query)
+    #             connection.commit()
+
+    #             success += 1
+    #             print(success)
+    #         except:
+    #             failed += 1
+    #             print("error", failed)
+    with open('Data/stockdata3.csv', newline='') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        success = 0
+        failed = 0
+        for row in spamreader:
+            raw = (' '.join(row))
+            tokens = raw.split(',')
+            # print(tokens)
+
+            query = 'INSERT INTO Company VALUES ("' + tokens[0] + '", "' + tokens[1] + '", ' + tokens[2] + ', ' + tokens[3] + '", "' + tokens[4] + '")'
+            # print(query)
+            try:
+                cursor.execute(query)
+                connection.commit()
+
+                success += 1
+                print(success)
+            except:
+                failed += 1
+                print(query)
+                print("error", failed)
+            
+
+    return "done"
 
 if __name__ == "__main__":
     app.run(debug=True)
