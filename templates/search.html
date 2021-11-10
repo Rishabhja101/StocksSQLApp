@@ -1,9 +1,12 @@
 <html>
     <p>Hi there. Try searching for a stock (ticker symbol or company name)</p>
     <div class="search-container">
-        <form method="post" action="/searchResults">
+        <form method="post" action="/search">
             <input type="text" placeholder="Search.." name="search_bar">
-            <button type="submit">Submit</button>
+            <button type="submit">Search</button>
         </form>
+    </div>
+    <div>
+        {{search_results | safe}}
     </div>
 </html>

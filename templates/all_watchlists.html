@@ -1,0 +1,12 @@
+<html>
+    <p>Hi {{user}}. Here are all of your watchlists:</p>
+    <div>
+        {{watchlists | safe}}
+    </div>
+    <div>
+        <form method="post" action="/watchlists">
+            <input type="text" placeholder="Watchlist Name.." name="new_list_name">
+            <button name="button" type="submit" value="add|{{user_name}}">Create New Watchlist</button>
+        </form>
+    </div>
+</html>

@@ -1,0 +1,28 @@
+<html>
+    <p>Welcome to your Watchlist: {{listName}}</p>
+    <p>Hi there. Try searching for a stock to add to your watchlist</p>
+    <div class="search-container">
+        <form method="post" action="/watchlist/{{listId}}">
+            <input type="text" placeholder="Search.." name="search_bar">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    <div>
+        {{search_results | safe}}
+    </div>
+    <div>
+        {{stocks | safe}}
+    </div>
+    <div>
+        <form method="get" action="/watchlists/{{userName}}">
+            <button type="submit">See all Watchlists</button>
+        </form>
+    </div>
+
+    <div>
+        <form method="post" action="/rename/{{listId}}">
+            <input type="text" placeholder="{{listName}}..." name="new_name">
+            <button type="submit">Rename Watchlist</button>
+        </form>
+    </div>
+</html>
