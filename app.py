@@ -1,14 +1,8 @@
 from flask import flash, Flask, redirect, render_template, request
-# from flask.globals import request
-# from flask_mysqldb import MySQL
-# from flaskext.mysql import MySQL
-# from flask_sqlalchemy import SQLAlchemy
 import mysql.connector
 import csv
 from mysql.connector import Error
 
-
-    
 
 def create_server_connection(host_name, user_name, user_password):
     connection = None
@@ -29,17 +23,6 @@ connection = create_server_connection("localhost", "root", '')
 cursor = connection.cursor()
 
 app = Flask(__name__)
-# mySQL = MySQL(app)
-# app.config['MYSQL_USER'] = 'root'
-# app.config['MYSQL_PASSWORD'] = ''
-# app.config['MYSQL_HOST'] = 'localhost'
-# app.config['MYSQL_DB'] = 'flask'
-# app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-
-# mysql = MySQL(app)
-# mysql = SQLAlchemy(app)
-# cursor = mysql.connection.cursor()
-# cursor.execute()
 
 def getSearchResults(keyword):
     cursor.execute("SELECT * FROM Stocks WHERE TickerSymbol LIKE \"" + keyword + "%\" OR CompanyName LIKE \"" + keyword + "%\"")
@@ -93,7 +76,15 @@ def getAllWatchlists(username):
     if len(data) == 0:
         list_html = '<div>You do not have any Watchlists yet.</div>'
 
-    return render_template('all_watchlists.html', user=username, watchlists=list_html, user_name=username)
+
+    cursor.execute('SELECT TickerSymbol, ROUND(100 * (ClosePrice - OpenPrice) /  OpenPrice, 2) AS PercentChange FROM Stocks NATURAL JOIN (SELECT * FROM Prices WHERE Date = "0000-00-00") AS t1 ORDER BY PercentChange DESC LIMIT 10')
+    top_movers = cursor.fetchall()
+    top_movers_html = '<div>'
+    for i in range(len(top_movers)):
+        top_movers_html += '<div>' + top_movers[i][0] + ' - ' + str(top_movers[i][1]) + '%' + '</div>'
+    top_movers_html += '</div>'
+
+    return render_template('all_watchlists.html', user=username, watchlists=list_html, user_name=username, top_movers=top_movers_html)
     
 
 @app.route("/watchlists", defaults={'username':'User1'}, methods = ['POST'])
@@ -134,11 +125,15 @@ def getWatchlist(listId):
     data = cursor.fetchall()
 
     list_html = '<form method="post" action="/removeStockFromList/' + listId +  '">'
+    list_html += '<div>Ticker Symbol, Company Name, PE Ratio, EPS, Market Cap</div><br/>'
     for i in range(len(data)):
         list_html += '<div>' + str(data[i]) + '  <button name="remove" type="submit" value='  + listId + '|' + data[i][0] + '>Remove</button></div>'
     list_html += '</form>'
 
-    return render_template('watchlist.html', stocks=list_html, search_results=[], listId=listId, userName=userName, listName=listName)
+    if len(data) == 0:
+        list_html = '<div>This watchlist is currently empty</div>'
+
+    return render_template('watchlist.html', stocks=list_html, listId=listId, userName=userName, listName=listName)
 
 @app.route("/watchlist", defaults={'listId':-1}, methods = ['POST'])
 @app.route("/watchlist/<listId>", methods = ['POST'])
@@ -154,16 +149,24 @@ def getWatchlistSearch(listId):
     cursor.execute('SELECT * FROM Stocks NATURAL JOIN Watchlists NATURAL JOIN WatchlistToTicker WHERE WatchlistId = ' + listId)
     data = cursor.fetchall()
     list_html = '<form method="post" action="/removeStockFromList/' + listId +  '">'
+    list_html += '<div>Ticker Symbol, Company Name, PE Ratio, EPS, Market Cap</div><br/>'
     for i in range(len(data)):
         list_html += '<div>' + str(data[i]) + '  <button name="remove" type="submit" value='  + listId + '|' + data[i][0] + '>Remove</button></div>'
     list_html += '</form>'
 
+    if len(data) == 0:
+        list_html = '<div>This watchlist is currently empty</div>'
+
 
     searches = getSearchResults(request.form['search_bar'])
     searches_html = '<form method="post" action="/addStockToList/' + listId +  '">'
+    searches_html += '<div>Ticker Symbol, Company Name, PE Ratio, EPS, Market Cap</div><br/>'
     for i in range(len(searches)):
         searches_html += '<div>' + str(searches[i]) + '  <button name="add" type="submit" value=' + listId + '|' + searches[i][0] + '>Add</button></div>'
     searches_html += '</form>'
+    
+    if type(searches) != list:
+        searches_html = '<div>' + searches + '</div>'
 
     # print(data)
     return render_template('watchlist.html', stocks=list_html, search_results=searches_html, listId=listId, userName=userName, listName=listName)
@@ -208,15 +211,14 @@ def RemoveStockFromList(listId):
 # def search():
 #     return render_template('search.html')
 
-@app.route("/stock_search_results")
-def stock_search_results(results):
-
-    if not results:
-        flash('No results found!')
-        return redirect('/')
-
-
-    return "Hola there!"
+@app.route("/test")
+def test():
+    query = 'SELECT TickerSymbol, ROUND(100 * (ClosePrice - OpenPrice) /  OpenPrice, 2) AS PercentChange FROM Stocks NATURAL JOIN (SELECT * FROM Prices WHERE Date = "0000-00-00") AS t1 ORDER BY PercentChange DESC LIMIT 10'
+    print(query)
+    cursor.execute(query)
+    data = cursor.fetchall()
+    print(data)
+    return str(data)
 
 @app.route("/data")
 def uploadData():

@@ -9,4 +9,9 @@
             <button name="button" type="submit" value="add|{{user_name}}">Create New Watchlist</button>
         </form>
     </div>
+    <br/>
+    <div>
+        <p>Today's Top Stocks (Ticker - % Change):</p>
+        {{top_movers | safe}}
+    </div>
 </html>

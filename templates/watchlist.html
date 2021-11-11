@@ -10,19 +10,19 @@
     <div>
         {{search_results | safe}}
     </div>
+    <br/>
     <div>
         {{stocks | safe}}
     </div>
     <div>
-        <form method="get" action="/watchlists/{{userName}}">
-            <button type="submit">See all Watchlists</button>
-        </form>
-    </div>
-
-    <div>
         <form method="post" action="/rename/{{listId}}">
             <input type="text" placeholder="{{listName}}..." name="new_name">
             <button type="submit">Rename Watchlist</button>
+        </form>
+    </div>
+    <div>
+        <form method="get" action="/watchlists/{{userName}}">
+            <button type="submit">See all Watchlists</button>
         </form>
     </div>
 </html>
